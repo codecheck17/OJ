@@ -13,16 +13,20 @@ class Problem(models.Model):
     def __str__(self):
         return self.Title
 
-def get_upload_to(Problem,filename):
-    return 'testfiles/%d/%s' %(Problem.Title,filename)
-
 class TestCase(models.Model):
+    
+    def upload_file_name_input(self, filename):
+        return f'testfiles/{self.Problem_Name.Title}/input/{filename}'
+    
+    def upload_file_name_output(self,filename):
+        return f'testfiles/{self.Problem_Name.Title}/output/{filename}'
+    
     Problem_Name = models.ForeignKey(Problem,on_delete = models.CASCADE)
-    Input_File = models.FileField(upload_to = 'testfiles/input/')
-    Output_file = models.FileField(upload_to = 'testfiles/output/')
+    Input_File = models.FileField(upload_to = upload_file_name_input)
+    Output_file = models.FileField(upload_to = upload_file_name_output)
     
     def __str__(self):
-        return self.Problem.Title 
+        return self.Problem_Name.Title 
 
 class Submission(models.Model):
       Problem = models.ForeignKey(Problem, on_delete = models.CASCADE)
@@ -32,3 +36,5 @@ class Submission(models.Model):
 
       def __str__(self):
         return self.Problem.Title
+
+
