@@ -7,6 +7,11 @@
     <title>Document</title>
 </head>
 <body>
-    New Submission
+    Problem Name : {{Problem_Name}} <br> 
+    <form method="post" enctype="multipart/form-data" action={% url 'NewSubmission' Problem_id %}>     
+        {% csrf_token %} 
+        {{NewForm.as_p}}
+      <input type="submit" name="Submit"></input>
+    </form>
 </body>
 </html>
