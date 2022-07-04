@@ -1,12 +1,10 @@
 import os,subprocess
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 
 from .forms import CodeForm
 from .models import Problem, Submission
-from django.core.files import File
 
 def ProblemSet(request):
     problems = Problem.objects.all()
@@ -64,4 +62,5 @@ def NewSubmission(request,Problem_id):
 
 def MySubmissions(request,Problem_id):
     return render(request,'judge/MySubmissions.html')
+
 

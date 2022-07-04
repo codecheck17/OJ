@@ -30,14 +30,17 @@ class TestCase(models.Model):
 
 class Submission(models.Model):
       
-      Problem = models.ForeignKey(Problem, on_delete = models.CASCADE)
       def upload_code_name(self,filename):
+        ext = filename.split('.')[-1]
+        filename = "%s.%s" % (self.Submission_Time,ext)
         return f'codes/mycodes/{self.Problem.Title}/{filename}'
       
+      Problem = models.ForeignKey(Problem, on_delete = models.CASCADE)
       Submission_Time = models.DateTimeField(default = datetime.now)
       Language = models.CharField(max_length = 10)
       Code = models.FileField(upload_to = upload_code_name) 
-
+      Result = models.CharField(max_length = 20,default = "None")
+      
       def __str__(self):
         return self.Problem.Title
 
