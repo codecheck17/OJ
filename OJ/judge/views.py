@@ -1,8 +1,8 @@
-import subprocess
+from fnmatch import fnmatch
+import subprocess,os,re
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-import re
 from .forms import CodeForm
 from .models import Problem, Submission
 
@@ -14,12 +14,25 @@ Language_Choices = {
     '5':'Haskell',
 }
 
+#=====================================================================================#
+
+
+
 def ProblemSet(request):
     problems = Problem.objects.all()
     context = {
         'problems' : problems
     }
     return render(request,'judge/ProblemSet.html',context)
+
+
+
+
+#=====================================================================================#
+
+
+
+
 
 def Description(request,Problem_id):
     CurrentProblem = get_object_or_404(Problem,pk = Problem_id)
@@ -43,26 +56,36 @@ def Description(request,Problem_id):
     }
     return render(request,'judge/Description.html',context)
 
+
+#===========================================================================================#
+
+
 def findVerdict(Problem,Submission):
    filename = str(Submission.Submission_Time)
    filename = re.sub('[;:,. -+]', '_',filename)
    filename = filename+'.cpp'
    FolderName = re.sub('[;:,. -+]','_',Problem.Title)
-   CodePath = f'codes/mycodes/{FolderName}/{filename}'
-   
-   inputFile = f'testfiles/{FolderName}/input/test_input_1.txt'  
-   actual_outputFile =  f'testfiles/{FolderName}/output/test_output_1.txt'
-   outputFile = f'C:/OJ/OJ/Output.txt'
+   CodePath = 'codes/mycodes/'+ FolderName + '/' + filename
+   Verdict = "AC"
+   mydir = os.listdir('testfiles/'+ FolderName + '/input/')
+   Count = len(mydir)
+   for i in range(1,Count+1):
+        
+        inputFile = 'testfiles/'+ FolderName + '/input/test_input_' + str(i) + '.txt'  
+        actual_outputFile = 'testfiles/'+ FolderName + '/output/test_output_' + str(i) + '.txt'  
+        outputFile = 'C:/OJ/OJ/Output.txt'
 
-   subprocess.run(['g++',CodePath,'-o','Output'])
-   subprocess.call('Output <'+inputFile+'> C:/OJ/OJ/Output.txt',shell=True)
-   with open(actual_outputFile) as file1 , open(outputFile) as file2:
-      data1=file1.read()
-      data2=file2.read()
-      if(data1==data2):
-        Verdict = "Accepted"
-      else:
-        Verdict = "Wrong Answer"  
+        subprocess.run(['g++',CodePath,'-o','Output'])
+        subprocess.call('Output <'+inputFile+'> C:/OJ/OJ/Output.txt',shell=True)
+        
+        with open(outputFile, 'r') as file:
+            data1 = file.read().replace('\n', '')
+        
+        with open(actual_outputFile, 'r') as file:
+            data2 = file.read().replace('\n', '') 
+        
+        if(data1!=data2):
+            Verdict = "WA"
    
    Code = []
    with open(CodePath) as Codes:
@@ -71,6 +94,16 @@ def findVerdict(Problem,Submission):
    
    Code.append(Verdict)
    return Code
+
+
+
+
+
+#=====================================================================================#
+
+
+
+
 
 def NewSubmission(request,Problem_id):
     thisProblem = get_object_or_404(Problem,pk = Problem_id)
@@ -82,6 +115,8 @@ def NewSubmission(request,Problem_id):
             thisSubmission.Language=Language_Choices[Language_Option]
             thisSubmission.save()
             result = findVerdict(thisProblem,thisSubmission)
+            thisSubmission.Result = result[-1]
+            thisSubmission.save() 
             context = {
                 'result': result,
                 'Language':thisSubmission.Language
@@ -97,6 +132,16 @@ def NewSubmission(request,Problem_id):
             'Problem_id' : Problem_id
         }
         return render(request,'judge/NewSubmission.html',context)
+
+
+
+
+
+#=====================================================================================#
+
+
+
+
 
 def MySubmissions(request,Problem_id):
     Problem_Name = get_object_or_404(Problem,pk=Problem_id).Title
