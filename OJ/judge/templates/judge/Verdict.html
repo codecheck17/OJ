@@ -7,6 +7,10 @@
     <title>Document</title>
 </head>
 <body>
-    {{result}}
+    {% for lines in result %}
+       {{lines}}<br>
+    {% endfor %}
+    <br>
+    {{Language}}
 </body>
 </html>

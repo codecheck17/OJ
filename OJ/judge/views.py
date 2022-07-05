@@ -1,10 +1,18 @@
-import os,subprocess
+import subprocess
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-
+import re
 from .forms import CodeForm
 from .models import Problem, Submission
+
+Language_Choices = {
+    '1':'C++',
+    '2':'Java',
+    '3':'Python',
+    '4':'JavaScript',
+    '5':'Haskell',
+}
 
 def ProblemSet(request):
     problems = Problem.objects.all()
@@ -15,8 +23,9 @@ def ProblemSet(request):
 
 def Description(request,Problem_id):
     CurrentProblem = get_object_or_404(Problem,pk = Problem_id)
-    Sample_Input_Path = f'testfiles/{CurrentProblem.Title}/input/test_input_1.txt'
-    Sample_Output_Path = f'testfiles/{CurrentProblem.Title}/output/test_output_1.txt'
+    FolderName = re.sub('[;:,. -+]','_',CurrentProblem.Title)
+    Sample_Input_Path = f'testfiles/{FolderName}/input/test_input_1.txt'
+    Sample_Output_Path = f'testfiles/{FolderName}/output/test_output_1.txt'
     with open(Sample_Input_Path) as f:
           Sample_Input = f.read()
     with open(Sample_Output_Path) as f:
@@ -34,8 +43,34 @@ def Description(request,Problem_id):
     }
     return render(request,'judge/Description.html',context)
 
-def findVerdict(Problem_id):
-   return "Accepted"
+def findVerdict(Problem,Submission):
+   filename = str(Submission.Submission_Time)
+   filename = re.sub('[;:,. -+]', '_',filename)
+   filename = filename+'.cpp'
+   FolderName = re.sub('[;:,. -+]','_',Problem.Title)
+   CodePath = f'codes/mycodes/{FolderName}/{filename}'
+   
+   inputFile = f'testfiles/{FolderName}/input/test_input_1.txt'  
+   actual_outputFile =  f'testfiles/{FolderName}/output/test_output_1.txt'
+   outputFile = f'C:/OJ/OJ/Output.txt'
+
+   subprocess.run(['g++',CodePath,'-o','Output'])
+   subprocess.call('Output <'+inputFile+'> C:/OJ/OJ/Output.txt',shell=True)
+   with open(actual_outputFile) as file1 , open(outputFile) as file2:
+      data1=file1.read()
+      data2=file2.read()
+      if(data1==data2):
+        Verdict = "Accepted"
+      else:
+        Verdict = "Wrong Answer"  
+   
+   Code = []
+   with open(CodePath) as Codes:
+      for line in Codes:
+        Code.append(line)
+   
+   Code.append(Verdict)
+   return Code
 
 def NewSubmission(request,Problem_id):
     thisProblem = get_object_or_404(Problem,pk = Problem_id)
@@ -43,10 +78,13 @@ def NewSubmission(request,Problem_id):
         thisSubmission = Submission(Problem = thisProblem)
         UploadedForm = CodeForm(request.POST,request.FILES,instance = thisSubmission)
         if UploadedForm.is_valid():
+            Language_Option = request.POST['Language_Select']
+            thisSubmission.Language=Language_Choices[Language_Option]
             thisSubmission.save()
-            result = findVerdict(Problem_id)
+            result = findVerdict(thisProblem,thisSubmission)
             context = {
                 'result': result,
+                'Language':thisSubmission.Language
             }
             return render(request,'judge/Verdict.html',context)
         else:
@@ -61,6 +99,11 @@ def NewSubmission(request,Problem_id):
         return render(request,'judge/NewSubmission.html',context)
 
 def MySubmissions(request,Problem_id):
-    return render(request,'judge/MySubmissions.html')
+    Problem_Name = get_object_or_404(Problem,pk=Problem_id).Title
+    SubmissionList=['hi','there']
+    context = {
+        'SubmissionList': SubmissionList
+    }
+    return render(request,'judge/MySubmissions.html',context)
 
 
