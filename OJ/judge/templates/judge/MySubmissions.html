@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +8,21 @@
     <title>Document</title>
 </head>
 <body>
-    {% for Submission in SubmissionList %}
-        {{Submission}}
-    {% endfor %}
+    <table>
+        <tr>
+           <th>Submission Time&emsp;&emsp;&emsp;&emsp;&emsp;</th>
+           <th>Langauge&emsp;&emsp;&emsp;&emsp;&emsp;</th>
+           <th>Verdict&emsp;&emsp;&emsp;&emsp;&emsp;</th>
+           <th>Code&emsp;&emsp;&emsp;&emsp;&emsp;</th>
+        </tr>
+        {% for Submission in SubmissionList %}
+          <tr>
+            <td>{{Submission.Submission_Time}}</td>
+            <td>{{Submission.Language}}</td>
+            <td>{{Submission.Result}}</td>
+            <td><button><a href={% url 'SubmissionDetail' Submission.Code.url %}>Show Code</a></button></td>
+          </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>

@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'judge',
     'login',
+    'crispy_forms',
+    'bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -82,6 +84,7 @@ DATABASES = {
     }
 }
 
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

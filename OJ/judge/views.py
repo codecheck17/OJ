@@ -1,4 +1,3 @@
-from fnmatch import fnmatch
 import subprocess,os,re
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -79,11 +78,13 @@ def findVerdict(Problem,Submission):
         subprocess.call('Output <'+inputFile+'> C:/OJ/OJ/Output.txt',shell=True)
         
         with open(outputFile, 'r') as file:
-            data1 = file.read().replace('\n', '')
+            data1 = file.read()
         
         with open(actual_outputFile, 'r') as file:
-            data2 = file.read().replace('\n', '') 
+            data2 = file.read() 
         
+        data1 = re.sub('[\n ]','',data1)
+        data2 = re.sub('[\n ]','',data2) 
         if(data1!=data2):
             Verdict = "WA"
    
@@ -144,11 +145,14 @@ def NewSubmission(request,Problem_id):
 
 
 def MySubmissions(request,Problem_id):
-    Problem_Name = get_object_or_404(Problem,pk=Problem_id).Title
-    SubmissionList=['hi','there']
+    thisProblem = get_object_or_404(Problem,pk=Problem_id)
+    SubmissionList=Submission.objects.filter(Problem = thisProblem).order_by('-Submission_Time')[:5]
     context = {
         'SubmissionList': SubmissionList
     }
     return render(request,'judge/MySubmissions.html',context)
 
+#======================================================================================#
 
+def SubmissionDetail(request,CodePath):
+    return HttpResponse(str(CodePath))

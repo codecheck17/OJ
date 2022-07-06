@@ -7,11 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    {% if messages %}
-      {% for message in messages %}
-         {{message}}
-      {% endfor %}
-    {% endif %}
-    {{Hello}}
+    {% for line in Code %}
+       line<br>
+    {% endfor %}
 </body>
 </html>
