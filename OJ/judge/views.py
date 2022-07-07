@@ -1,9 +1,10 @@
-import subprocess,os,re
+import subprocess,re,os
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from .forms import CodeForm
-from .models import Problem, Submission
+from .models import Problem, Submission, TestCase
 
 Language_Choices = {
     '1':'C++',
@@ -16,8 +17,9 @@ Language_Choices = {
 #=====================================================================================#
 
 
-
+@login_required
 def ProblemSet(request):
+    username = None
     problems = Problem.objects.all()
     context = {
         'problems' : problems
@@ -32,16 +34,17 @@ def ProblemSet(request):
 
 
 
-
+@login_required
 def Description(request,Problem_id):
     CurrentProblem = get_object_or_404(Problem,pk = Problem_id)
-    FolderName = re.sub('[;:,. -+]','_',CurrentProblem.Title)
-    Sample_Input_Path = f'testfiles/{FolderName}/input/test_input_1.txt'
-    Sample_Output_Path = f'testfiles/{FolderName}/output/test_output_1.txt'
-    with open(Sample_Input_Path) as f:
-          Sample_Input = f.read()
-    with open(Sample_Output_Path) as f:
-          Sample_Output = f.read()      
+    testcases = TestCase.objects.filter(Problem_Name = CurrentProblem)[:1]
+    for testcase in testcases:
+        Sample_Input_Path = f'C:/OJ/OJ/{testcase.Input_File.url}'
+        Sample_Output_Path = f'C:/OJ/OJ/{testcase.Output_file.url}'
+        
+        with open(Sample_Input_Path) as ip,open(Sample_Output_Path) as op:
+            Sample_Input = ip.read()
+            Sample_Output = op.read()    
     
     context = {
         'Problem_id' : Problem_id,
@@ -60,22 +63,17 @@ def Description(request,Problem_id):
 
 
 def findVerdict(Problem,Submission):
-   filename = str(Submission.Submission_Time)
-   filename = re.sub('[;:,. -+]', '_',filename)
-   filename = filename+'.cpp'
-   FolderName = re.sub('[;:,. -+]','_',Problem.Title)
-   CodePath = 'codes/mycodes/'+ FolderName + '/' + filename
+   CodePath = f'C:/OJ/OJ/{Submission.Code.url}'
    Verdict = "AC"
-   mydir = os.listdir('testfiles/'+ FolderName + '/input/')
-   Count = len(mydir)
-   for i in range(1,Count+1):
+   testcases = TestCase.objects.filter(Problem_Name = Problem)
+   subprocess.run(f'g++ {CodePath} -o Output',shell = True)
+   for testcase in testcases:
         
-        inputFile = 'testfiles/'+ FolderName + '/input/test_input_' + str(i) + '.txt'  
-        actual_outputFile = 'testfiles/'+ FolderName + '/output/test_output_' + str(i) + '.txt'  
+        inputFile = f'C:/OJ/OJ/{testcase.Input_File.url}'  
+        actual_outputFile = f'C:/OJ/OJ/{testcase.Output_file.url}'   
         outputFile = 'C:/OJ/OJ/Output.txt'
 
-        subprocess.run(['g++',CodePath,'-o','Output'])
-        subprocess.call('Output <'+inputFile+'> C:/OJ/OJ/Output.txt',shell=True)
+        subprocess.call(f'Output < {inputFile} > C:/OJ/OJ/Output.txt',shell = True)
         
         with open(outputFile, 'r') as file:
             data1 = file.read()
@@ -88,6 +86,8 @@ def findVerdict(Problem,Submission):
         if(data1!=data2):
             Verdict = "WA"
    
+   os.remove('Output.exe')
+   os.remove('Output.txt')
    Code = []
    with open(CodePath) as Codes:
       for line in Codes:
@@ -105,7 +105,7 @@ def findVerdict(Problem,Submission):
 
 
 
-
+@login_required
 def NewSubmission(request,Problem_id):
     thisProblem = get_object_or_404(Problem,pk = Problem_id)
     if request.method == 'POST': 
@@ -132,7 +132,8 @@ def NewSubmission(request,Problem_id):
             'NewForm' : NewForm,
             'Problem_id' : Problem_id
         }
-        return render(request,'judge/NewSubmission.html',context)
+    
+    return render(request,'judge/NewSubmission.html',context)
 
 
 
@@ -143,7 +144,7 @@ def NewSubmission(request,Problem_id):
 
 
 
-
+@login_required
 def MySubmissions(request,Problem_id):
     thisProblem = get_object_or_404(Problem,pk=Problem_id)
     SubmissionList=Submission.objects.filter(Problem = thisProblem).order_by('-Submission_Time')[:5]
@@ -153,6 +154,6 @@ def MySubmissions(request,Problem_id):
     return render(request,'judge/MySubmissions.html',context)
 
 #======================================================================================#
-
+@login_required
 def SubmissionDetail(request,CodePath):
     return HttpResponse(str(CodePath))

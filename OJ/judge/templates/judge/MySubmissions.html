@@ -20,7 +20,7 @@
             <td>{{Submission.Submission_Time}}</td>
             <td>{{Submission.Language}}</td>
             <td>{{Submission.Result}}</td>
-            <td><button><a href={% url 'SubmissionDetail' Submission.Code.url %}>Show Code</a></button></td>
+            <td><button><a href="{{Submission.Code.url}}">Show Code</a></button></td>
           </tr>
         {% endfor %}
     </table>

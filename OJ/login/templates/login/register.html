@@ -12,11 +12,11 @@
     <form method="POST">
         {% csrf_token %}
         <fieldset class="form-group">
-            {{ form|crispy }}
+            {{ form|crispy }}<br><br>
+            <button type="submit">Register</button>   
         </fieldset>
-        <button type="submit">Register</button>   
     </form>
     <br>
-    Already Have an Account? <a href="login/">Sign In</a>
+    Already Have an Account? <a href={% url 'login' %}>Login</a>
 </body>
 </html>

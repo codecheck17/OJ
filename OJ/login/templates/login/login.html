@@ -1,3 +1,4 @@
+{% load crispy_forms_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,11 +8,17 @@
     <title>Document</title>
 </head>
 <body>
-    {% if messages %}
-      {% for message in messages %}
-         {{message}}
-      {% endfor %}
-    {% endif %}
-    {{Hello}}
+  {% if message %}
+     {{message}}
+  {% endif %}
+  <form method="POST">
+    {% csrf_token %}
+    <fieldset class="form-group">
+        {{ form|crispy }}<br><br>
+        <button type="submit">Login</button>   
+    </fieldset>
+  </form>
+  <br>
+  Don't Have an Account? <a href={% url 'register' %}>Register</a>
 </body>
 </html>
