@@ -1,4 +1,5 @@
 import subprocess,re,os
+import this
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -141,6 +142,14 @@ def NewSubmission(request,Problem_id):
 
 #=====================================================================================#
 
+class TemplateSubmission():
+    SubmissionTime = None
+    folder = None
+    user = None
+    filename = None
+    Result = None
+    Language = None
+    problem = None
 
 
 
@@ -148,12 +157,34 @@ def NewSubmission(request,Problem_id):
 def MySubmissions(request,Problem_id):
     thisProblem = get_object_or_404(Problem,pk=Problem_id)
     SubmissionList=Submission.objects.filter(Problem = thisProblem).order_by('-Submission_Time')[:5]
+    TemplateSubmissionList = []
+    for thisSubmission in SubmissionList:
+        Template = TemplateSubmission()
+        Template.Language = thisSubmission.Language
+        Template.Result = thisSubmission.Result
+        Template.SubmissionTime = thisSubmission.Submission_Time
+        thisList = thisSubmission.Code.url.split('/')
+       
+        Template.folder = thisList[1]
+        Template.user = thisList[2]
+        Template.problem = thisList[3]
+        Template.filename = thisList[4]
+        
+        TemplateSubmissionList.append(Template)
+    
     context = {
-        'SubmissionList': SubmissionList
+        'SubmissionList': TemplateSubmissionList
     }
     return render(request,'judge/MySubmissions.html',context)
 
 #======================================================================================#
+
 @login_required
-def SubmissionDetail(request,CodePath):
-    return HttpResponse(str(CodePath))
+def SubmissionDetail(request,folder,user,problem,filename):
+    with open(f'C:/OJ/OJ/{folder}/{user}/{problem}/{filename}') as f:
+        Code = f.readlines()
+    
+    context = {
+        'Code' : Code
+    }
+    return render(request,'judge/SubmissionDetail.html',context)

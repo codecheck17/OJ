@@ -8,6 +8,7 @@
     <title>Document</title>
 </head>
 <body>
+    {% if SubmissionList %}
     <table>
         <tr>
            <th>Submission Time&emsp;&emsp;&emsp;&emsp;&emsp;</th>
@@ -17,12 +18,15 @@
         </tr>
         {% for Submission in SubmissionList %}
           <tr>
-            <td>{{Submission.Submission_Time}}</td>
+            <td>{{Submission.SubmissionTime}}</td>
             <td>{{Submission.Language}}</td>
             <td>{{Submission.Result}}</td>
-            <td><button><a href="{{Submission.Code.url}}">Show Code</a></button></td>
+            <td><button><a href={% url 'SubmissionDetail'  Submission.folder Submission.user Submission.problem Submission.filename %}>Show Code</a></button></td>
           </tr>
         {% endfor %}
     </table>
+    {% else %}
+       No Submissions for this Problem yet
+    {% endif %}
 </body>
 </html>
