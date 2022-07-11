@@ -1,9 +1,10 @@
-import subprocess,re,os
-import this
+import subprocess,re
+
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+
 from .forms import CodeForm
 from .models import Problem, Submission, TestCase
 
@@ -12,7 +13,6 @@ Language_Choices = {
     '2':'Java',
     '3':'Python',
     '4':'JavaScript',
-    '5':'Haskell',
 }
 
 #=====================================================================================#
@@ -20,10 +20,11 @@ Language_Choices = {
 
 @login_required
 def ProblemSet(request):
-    username = None
+    username = request.user.username
     problems = Problem.objects.all()
     context = {
-        'problems' : problems
+        'problems' : problems,
+        'username': username
     }
     return render(request,'judge/ProblemSet.html',context)
 
@@ -37,6 +38,7 @@ def ProblemSet(request):
 
 @login_required
 def Description(request,Problem_id):
+    username = request.user.username
     CurrentProblem = get_object_or_404(Problem,pk = Problem_id)
     testcases = TestCase.objects.filter(Problem_Name = CurrentProblem)[:1]
     for testcase in testcases:
@@ -48,6 +50,7 @@ def Description(request,Problem_id):
             Sample_Output = op.read()    
     
     context = {
+        'username': username,
         'Problem_id' : Problem_id,
         'Title' : CurrentProblem.Title,
         'Description' : CurrentProblem.Description,
@@ -74,7 +77,7 @@ def findVerdict(Problem,Submission):
         actual_outputFile = f'C:/OJ/OJ/{testcase.Output_file.url}'   
         outputFile = 'C:/OJ/OJ/Output.txt'
 
-        subprocess.call(f'Output < {inputFile} > C:/OJ/OJ/Output.txt',shell = True)
+        subprocess.run(f'Output < {inputFile} > C:/OJ/OJ/Output.txt',shell = True)
         
         with open(outputFile, 'r') as file:
             data1 = file.read()
@@ -87,8 +90,6 @@ def findVerdict(Problem,Submission):
         if(data1!=data2):
             Verdict = "WA"
    
-   os.remove('Output.exe')
-   os.remove('Output.txt')
    Code = []
    with open(CodePath) as Codes:
       for line in Codes:
@@ -108,6 +109,7 @@ def findVerdict(Problem,Submission):
 
 @login_required
 def NewSubmission(request,Problem_id):
+    username = request.user.username
     thisProblem = get_object_or_404(Problem,pk = Problem_id)
     if request.method == 'POST': 
         thisSubmission = Submission(Problem = thisProblem)
@@ -129,6 +131,7 @@ def NewSubmission(request,Problem_id):
     else:
         NewForm = CodeForm()
         context = {
+            'username' : username,
             'Problem_Name': thisProblem.Title,
             'NewForm' : NewForm,
             'Problem_id' : Problem_id

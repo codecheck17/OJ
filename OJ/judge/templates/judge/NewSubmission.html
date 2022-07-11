@@ -7,6 +7,8 @@
     <title>Document</title>
 </head>
 <body>
+    <h3 align="right">{{ username }}</h3>
+    <h3 align="right"><a href = {% url 'logout' %}>Logout</a></h3>
     Problem Name : {{Problem_Name}} <br> 
     <form method="post" enctype="multipart/form-data" action={% url 'NewSubmission' Problem_id %}>     
         {% csrf_token %} 

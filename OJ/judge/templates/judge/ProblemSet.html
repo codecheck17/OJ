@@ -7,6 +7,8 @@
     <title>Document</title>
 </head>
 <body>
+    <h3 align="right">{{ username }}</h3>
+    <h3 align="right"><a href = {% url 'logout' %}>Logout</a></h3>
     {% for problem in problems %}
       <li><a href={% url 'Description' problem.Problem_id%}>{{problem.Title}}</a></li>
     {% endfor %}

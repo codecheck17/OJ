@@ -9,7 +9,7 @@
 </head>
 <body>
   {% if message %}
-     {{message}}
+     {{message.info}}
   {% endif %}
   <form method="POST">
     {% csrf_token %}

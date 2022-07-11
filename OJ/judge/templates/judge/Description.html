@@ -7,6 +7,8 @@
     <title>Document</title>
 </head>
 <body>
+    <h3 align="right">{{ username }}</h3>
+    <h3 align="right"><a href = {% url 'logout' %}>Logout</a></h3>
     <h1>{{Title}}</h1><br>
     <h3>{{Description}}</h3><br>
     Input Details : <br>
@@ -14,9 +16,9 @@
     Output Details : <br>
     {{Output_Format}} <br><br>
     Sample Input : <br>
-    {{Sample_Input}}<br><br>
+    {{Sample_Input|linebreaks}}
     Sample Output : <br>
-    {{Sample_Output}}<br><br>
+    {{Sample_Output|linebreaks}}
     <button><a href = {% url 'NewSubmission' Problem_id %}>Submit</a></button><br><br>
     <button><a href = {% url 'MySubmissions' Problem_id %}>My Submissions</a></button><br>
 </body>
