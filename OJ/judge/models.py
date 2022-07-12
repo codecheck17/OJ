@@ -1,6 +1,5 @@
 from tkinter import CASCADE
 from django.db import models
-from login.models import Myuser
 import re
 class Problem(models.Model):
     Problem_id = models.PositiveBigIntegerField(default = 0)
@@ -16,11 +15,11 @@ class Problem(models.Model):
 class TestCase(models.Model):
     
     def upload_file_name_input(self, filename):
-        FolderName = re.sub('[;:,. -+]','_',self.Problem_Name.Title)
+        FolderName = self.Problem_Name.Title
         return f'testfiles/{FolderName}/input/{filename}'
     
     def upload_file_name_output(self,filename):
-        FolderName = re.sub('[;:,. -+]','_',self.Problem_Name.Title)
+        FolderName = self.Problem_Name.Title
         return f'testfiles/{FolderName}/output/{filename}'
     
     Problem_Name = models.ForeignKey(Problem,on_delete = models.CASCADE)
@@ -33,11 +32,10 @@ class TestCase(models.Model):
 class Submission(models.Model):
       
       def upload_code_name(self,filename):
-        FolderName = self.Problem.Title
-        Username = self.User.user_name
-        return f'codes/{Username}/{FolderName}/{filename}'
+        FolderName = re.sub('[;:,. -+]','_',self.Problem.Title)
+        return f'codes/{self.UserName}/{FolderName}/{filename}'
       
-      User = models.ForeignKey(Myuser, on_delete = models.CASCADE)
+      UserName = models.CharField(max_length = 150,default = None)
       Problem = models.ForeignKey(Problem, on_delete = models.CASCADE)
       Submission_Time = models.DateTimeField(auto_now_add = True)
       Language = models.CharField(max_length = 10)

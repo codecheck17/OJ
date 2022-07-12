@@ -12,7 +12,8 @@ Language_Choices = {
     '1':'C++',
     '2':'Java',
     '3':'Python',
-    '4':'JavaScript',
+    '4':'Node.js',
+    '5':'Rust',
 }
 
 #=====================================================================================#
@@ -70,14 +71,23 @@ def findVerdict(Problem,Submission):
    CodePath = f'C:/OJ/OJ/{Submission.Code.url}'
    Verdict = "AC"
    testcases = TestCase.objects.filter(Problem_Name = Problem)
-   subprocess.run(f'g++ {CodePath} -o Output',shell = True)
+   
+   CompletedSubprocess = subprocess.run(f'docker run -d gcc tail -f /dev/null',capture_output = True)
+   Container_id = CompletedSubprocess.stdout.decode()
+   Container_id = Container_id[:-1]
+   Container_file = CodePath.split('/')[-1]
+   subprocess.run(f'docker cp {CodePath} {Container_id}:/{Container_file}')
+   subprocess.run(f'docker exec {Container_id} g++ {Container_file} -o temp') 
+   
    for testcase in testcases:
         
         inputFile = f'C:/OJ/OJ/{testcase.Input_File.url}'  
         actual_outputFile = f'C:/OJ/OJ/{testcase.Output_file.url}'   
-        outputFile = 'C:/OJ/OJ/Output.txt'
-
-        subprocess.run(f'Output < {inputFile} > C:/OJ/OJ/Output.txt',shell = True)
+        outputFile = f'C:/OJ/OJ/Output.txt'
+       
+        subprocess.run(f'docker cp {inputFile} {Container_id}:/input.txt')
+        subprocess.run(f'docker exec {Container_id} sh -c "./temp < input.txt > output.txt"')
+        subprocess.run(f'docker cp {Container_id}:/output.txt {outputFile}')
         
         with open(outputFile, 'r') as file:
             data1 = file.read()
@@ -90,6 +100,7 @@ def findVerdict(Problem,Submission):
         if(data1!=data2):
             Verdict = "WA"
    
+   subprocess.run(f'docker rm -f {Container_id}')
    Code = []
    with open(CodePath) as Codes:
       for line in Codes:
@@ -115,13 +126,15 @@ def NewSubmission(request,Problem_id):
         thisSubmission = Submission(Problem = thisProblem)
         UploadedForm = CodeForm(request.POST,request.FILES,instance = thisSubmission)
         if UploadedForm.is_valid():
-            Language_Option = request.POST['Language_Select']
-            thisSubmission.Language=Language_Choices[Language_Option]
+            Language_Option = UploadedForm.cleaned_data['Language_Select']
+            thisSubmission.Language = Language_Choices[Language_Option]
+            thisSubmission.UserName = username
             thisSubmission.save()
             result = findVerdict(thisProblem,thisSubmission)
             thisSubmission.Result = result[-1]
             thisSubmission.save() 
             context = {
+                'username' : username,
                 'result': result,
                 'Language':thisSubmission.Language
             }
@@ -159,7 +172,8 @@ class TemplateSubmission():
 @login_required
 def MySubmissions(request,Problem_id):
     thisProblem = get_object_or_404(Problem,pk=Problem_id)
-    SubmissionList=Submission.objects.filter(Problem = thisProblem).order_by('-Submission_Time')[:5]
+    username = request.user.username
+    SubmissionList=Submission.objects.filter(Problem = thisProblem,UserName = username).order_by('-Submission_Time')[:5]
     TemplateSubmissionList = []
     for thisSubmission in SubmissionList:
         Template = TemplateSubmission()
@@ -184,6 +198,7 @@ def MySubmissions(request,Problem_id):
 
 @login_required
 def SubmissionDetail(request,folder,user,problem,filename):
+
     with open(f'C:/OJ/OJ/{folder}/{user}/{problem}/{filename}') as f:
         Code = f.readlines()
     

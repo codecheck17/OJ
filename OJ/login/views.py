@@ -1,8 +1,7 @@
-import email
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from .forms import UserRegistrationForm
-from .models import Myuser
+from .models import MyUser
 
 def register(request):
     if request.method == "POST":
@@ -11,7 +10,7 @@ def register(request):
             form.save()
             username = form.cleaned_data.get('username')
             email = form.cleaned_data.get('email')
-            new_user = Myuser(user_name = username,email_id = email)
+            new_user = MyUser(user_name = username,email_id = email)
             new_user.save()
             messages.success(request,f'Account Created For {username}!')
             return redirect('login')   
@@ -23,9 +22,6 @@ def register(request):
     return render(request,'login/register.html',context)
 
 def login(request):
-    context = {
-        'Hello' : "Login page"
-    }
-    return render(request,'login/login.html',context)
+    return render(request,'login/login.html')
 
 

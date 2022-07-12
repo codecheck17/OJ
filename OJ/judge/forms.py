@@ -6,7 +6,8 @@ Language_Choices = {
     ('1','C++'),
     ('2','Java'),
     ('3','Python'),
-    ('4','JavaScript'),
+    ('4','Node.js'),
+    ('5','Rust'),
 }
 class CodeForm(forms.ModelForm):
     class Meta:
