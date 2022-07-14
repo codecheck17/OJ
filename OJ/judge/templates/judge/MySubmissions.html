@@ -21,7 +21,7 @@
             <td>{{Submission.SubmissionTime}}</td>
             <td>{{Submission.Language}}</td>
             <td>{{Submission.Result}}</td>
-            <td><button><a href={% url 'SubmissionDetail'  Submission.folder Submission.user Submission.problem Submission.filename %}>Show Code</a></button></td>
+            <td><button><a href={% url 'SubmissionDetail'  Submission.folder Submission.problem Submission.user Submission.SubmissionId Submission.filename %}>Show Code</a></button></td>
           </tr>
         {% endfor %}
     </table>

@@ -1,4 +1,5 @@
-import subprocess,re
+import subprocess,re,os
+import this
 
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -12,9 +13,65 @@ Language_Choices = {
     '1':'C++',
     '2':'Java',
     '3':'Python',
-    '4':'Node.js',
-    '5':'Rust',
 }
+
+Language_Container = {
+    'C++':'gcc',
+    'Java':'java',
+    'Python':'python',
+}
+
+def findVerdict(Problem,Submission):
+   CodePath = f'C:/OJ/OJ/{Submission.Code.url}'
+   Verdict = "AC"
+   Language = Submission.Language
+   testcases = TestCase.objects.filter(Problem_Name = Problem)
+   
+   CompletedSubprocess = subprocess.run(f'docker run -d {Language_Container[Language]} tail -f /dev/null',capture_output = True)
+   Container_id = CompletedSubprocess.stdout.decode()
+   Container_id = Container_id[:-1]
+   Container_file = CodePath.split('/')[-1]
+   subprocess.run(f'docker cp {CodePath} {Container_id}:/{Container_file}')
+   
+   if Language == 'C++':
+        subprocess.run(f'docker exec {Container_id} g++ {Container_file}') 
+   elif Language == 'Java':
+        Executable_name = os.path.splitext(Container_file)[0]
+        subprocess.run(f'docker exec {Container_id} javac {Container_file}')   
+   
+   for testcase in testcases:
+        
+        inputFile = f'C:/OJ/OJ/{testcase.Input_File.url}'  
+        actual_outputFile = f'C:/OJ/OJ/{testcase.Output_file.url}'   
+        outputFile = f'C:/OJ/OJ/Output.txt'
+       
+        subprocess.run(f'docker cp {inputFile} {Container_id}:/input.txt')
+        if Language == 'C++':
+            subprocess.run(f'docker exec {Container_id} sh -c "./a.out < input.txt > output.txt"')
+        elif Language == 'Java':
+            subprocess.run(f'docker exec {Container_id} sh -c "java {Executable_name} < input.txt > output.txt"') 
+        else :
+            subprocess.run(f'docker exec {Container_id} sh -c "python {Container_file} < input.txt > output.txt"')     
+         
+        subprocess.run(f'docker cp {Container_id}:/output.txt {outputFile}')
+        
+        with open(outputFile, 'r') as file:
+            data1 = file.read()
+        
+        with open(actual_outputFile, 'r') as file:
+            data2 = file.read() 
+        
+        data1 = re.sub('[\n ]','',data1)
+        data2 = re.sub('[\n ]','',data2) 
+        if(data1!=data2):
+            Verdict = "WA"
+   
+   subprocess.run(f'docker rm -f {Container_id}')
+   with open(CodePath) as Codes:
+      Code = Codes.read()
+   
+   return [Code,Verdict]
+
 
 #=====================================================================================#
 
@@ -67,57 +124,6 @@ def Description(request,Problem_id):
 #===========================================================================================#
 
 
-def findVerdict(Problem,Submission):
-   CodePath = f'C:/OJ/OJ/{Submission.Code.url}'
-   Verdict = "AC"
-   testcases = TestCase.objects.filter(Problem_Name = Problem)
-   
-   CompletedSubprocess = subprocess.run(f'docker run -d gcc tail -f /dev/null',capture_output = True)
-   Container_id = CompletedSubprocess.stdout.decode()
-   Container_id = Container_id[:-1]
-   Container_file = CodePath.split('/')[-1]
-   subprocess.run(f'docker cp {CodePath} {Container_id}:/{Container_file}')
-   subprocess.run(f'docker exec {Container_id} g++ {Container_file} -o temp') 
-   
-   for testcase in testcases:
-        
-        inputFile = f'C:/OJ/OJ/{testcase.Input_File.url}'  
-        actual_outputFile = f'C:/OJ/OJ/{testcase.Output_file.url}'   
-        outputFile = f'C:/OJ/OJ/Output.txt'
-       
-        subprocess.run(f'docker cp {inputFile} {Container_id}:/input.txt')
-        subprocess.run(f'docker exec {Container_id} sh -c "./temp < input.txt > output.txt"')
-        subprocess.run(f'docker cp {Container_id}:/output.txt {outputFile}')
-        
-        with open(outputFile, 'r') as file:
-            data1 = file.read()
-        
-        with open(actual_outputFile, 'r') as file:
-            data2 = file.read() 
-        
-        data1 = re.sub('[\n ]','',data1)
-        data2 = re.sub('[\n ]','',data2) 
-        if(data1!=data2):
-            Verdict = "WA"
-   
-   subprocess.run(f'docker rm -f {Container_id}')
-   Code = []
-   with open(CodePath) as Codes:
-      for line in Codes:
-        Code.append(line)
-   
-   Code.append(Verdict)
-   return Code
-
-
-
-
-
-#=====================================================================================#
-
-
-
-
 @login_required
 def NewSubmission(request,Problem_id):
     username = request.user.username
@@ -129,13 +135,15 @@ def NewSubmission(request,Problem_id):
             Language_Option = UploadedForm.cleaned_data['Language_Select']
             thisSubmission.Language = Language_Choices[Language_Option]
             thisSubmission.UserName = username
+            thisSubmission.SubmissionId = Submission.objects.all().count()+1
             thisSubmission.save()
-            result = findVerdict(thisProblem,thisSubmission)
-            thisSubmission.Result = result[-1]
+            Code = findVerdict(thisProblem,thisSubmission)
+            thisSubmission.Result = Code[1]
             thisSubmission.save() 
             context = {
                 'username' : username,
-                'result': result,
+                'Code':  Code[0],
+                'result': Code[1],
                 'Language':thisSubmission.Language
             }
             return render(request,'judge/Verdict.html',context)
@@ -159,13 +167,14 @@ def NewSubmission(request,Problem_id):
 #=====================================================================================#
 
 class TemplateSubmission():
+    SubmissionId = None
     SubmissionTime = None
+    problem = None
     folder = None
     user = None
     filename = None
     Result = None
     Language = None
-    problem = None
 
 
 
@@ -181,12 +190,13 @@ def MySubmissions(request,Problem_id):
         Template.Result = thisSubmission.Result
         Template.SubmissionTime = thisSubmission.Submission_Time
         thisList = thisSubmission.Code.url.split('/')
-       
+      
         Template.folder = thisList[1]
-        Template.user = thisList[2]
-        Template.problem = thisList[3]
-        Template.filename = thisList[4]
-        
+        Template.problem = thisList[2]
+        Template.user = thisList[3]
+        Template.SubmissionId = thisList[4]
+        Template.filename = thisList[5]
+
         TemplateSubmissionList.append(Template)
     
     context = {
@@ -197,10 +207,10 @@ def MySubmissions(request,Problem_id):
 #======================================================================================#
 
 @login_required
-def SubmissionDetail(request,folder,user,problem,filename):
+def SubmissionDetail(request,folder,problem,user,subid,filename):
 
-    with open(f'C:/OJ/OJ/{folder}/{user}/{problem}/{filename}') as f:
-        Code = f.readlines()
+    with open(f'C:/OJ/OJ/{folder}/{problem}/{user}/{subid}/{filename}') as Codes:
+        Code = Codes.read()
     
     context = {
         'Code' : Code

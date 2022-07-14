@@ -21,7 +21,5 @@ def register(request):
     }
     return render(request,'login/register.html',context)
 
-def login(request):
-    return render(request,'login/login.html')
 
 

@@ -29,12 +29,26 @@ class TestCase(models.Model):
     def __str__(self):
         return self.Problem_Name.Title 
 
+class SubmissionQuerySet(models.QuerySet):
+    def delete(self, *args, **kwargs):
+        for obj in self:
+            obj.Code.delete()
+        super(SubmissionQuerySet, self).delete(*args, **kwargs)
+
+
 class Submission(models.Model):
       
       def upload_code_name(self,filename):
         FolderName = re.sub('[;:,. -+]','_',self.Problem.Title)
-        return f'codes/{self.UserName}/{FolderName}/{filename}'
+        filename = re.sub('[ ]','',filename)
+        return f'codes/{FolderName}/{self.UserName}/{self.SubmissionId}/{filename}'
       
+      def delete(self,*args,**kwargs):
+        self.Code.delete()
+        super(Submission,self).delete(*args,**kwargs)
+      
+      objects = SubmissionQuerySet.as_manager()
+      SubmissionId = models.PositiveBigIntegerField(default = 0)
       UserName = models.CharField(max_length = 150,default = None)
       Problem = models.ForeignKey(Problem, on_delete = models.CASCADE)
       Submission_Time = models.DateTimeField(auto_now_add = True)
@@ -43,6 +57,6 @@ class Submission(models.Model):
       Result = models.CharField(max_length = 20,default = "None")
       
       def __str__(self):
-        return self.Problem.Title
+        return self.UserName + r'/' +self.Problem.Title 
 
 

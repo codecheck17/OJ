@@ -11,11 +11,11 @@
   {% if message %}
      {{message.info}}
   {% endif %}
-  <h1>Login Page</h1>
+  <h1>Login</h1>
   <form method="POST">
     {% csrf_token %}
     <fieldset class="form-group">
-        {{ form|crispy }}<br><br>
+        {% crispy form%}<br><br>
         <button type="submit">Login</button>   
     </fieldset>
   </form>
