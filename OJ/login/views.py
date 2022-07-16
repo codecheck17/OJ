@@ -14,12 +14,10 @@ def register(request):
             new_user.save()
             messages.success(request,f'Account Created For {username}!')
             return redirect('login')   
-
-    form = UserRegistrationForm()
-    context = {
-        'form' : form
-    }
-    return render(request,'login/register.html',context)
+    else :
+        form = UserRegistrationForm()
+        
+    return render(request,'login/register.html',{'form':form})
 
 
 

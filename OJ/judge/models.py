@@ -48,7 +48,7 @@ class Submission(models.Model):
         super(Submission,self).delete(*args,**kwargs)
       
       objects = SubmissionQuerySet.as_manager()
-      SubmissionId = models.PositiveBigIntegerField(default = 0)
+      SubmissionId = models.PositiveBigIntegerField(default = 0,primary_key=True)
       UserName = models.CharField(max_length = 150,default = None)
       Problem = models.ForeignKey(Problem, on_delete = models.CASCADE)
       Submission_Time = models.DateTimeField(auto_now_add = True)

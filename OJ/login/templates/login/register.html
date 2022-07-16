@@ -1,23 +1,26 @@
-
 {% load crispy_forms_tags %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Document</title>
-</head>
-<body>
-    <h1>Register</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <fieldset class="form-group">
-            {% crispy form %}<br><br>
-            <button type="submit">Register</button>   
-        </fieldset>
-    </form>
-    <br>
-    Already Have an Account? <a href={% url 'login' %}>Login</a>
-</body>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="content-section">
+        <form class="mx-5 my-4" method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom fs-1 mb-4">Register</legend>
+                {% crispy form %} 
+                <button class="my-4 btn btn-primary" type="submit">Register</button>
+            </fieldset>
+        </form>
+        <div class="mx-5">
+            <p>Already Have an Account? <a href={% url 'login' %}>Login</a></p>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+  </body>
 </html>

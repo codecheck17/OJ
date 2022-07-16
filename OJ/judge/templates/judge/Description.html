@@ -1,25 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
 </head>
+
 <body>
-    <h3 align="right">{{ username }}</h3>
-    <h3 align="right"><a href = {% url 'logout' %}>Logout</a></h3>
-    <h1>{{Title}}</h1><br>
-    <h3>{{Description}}</h3><br>
-    Input Details : <br>
-    {{Input_Format}} <br><br>
-    Output Details : <br>
-    {{Output_Format}} <br><br>
-    Sample Input : <br>
-    {{Sample_Input|linebreaks}}
-    Sample Output : <br>
-    {{Sample_Output|linebreaks}}
-    <button><a href = {% url 'NewSubmission' Problem_id %}>Submit</a></button><br><br>
-    <button><a href = {% url 'MySubmissions' Problem_id %}>My Submissions</a></button><br>
+    <nav class="navbar bg-light justify-content-end">
+        <div class="p-2">{{ username }}</div>
+        <div class="p-2"><a class="btn btn-primary" href={% url 'ProblemSet' %}>Home</a></div>
+        <div class="p-2"><a class="btn btn-primary" href={% url 'logout' %}>Logout</a></div>
+      </nav>
+    <div class="mx-5 my-2">
+        <nav class="nav nav-pills">
+            <a class="nav-link active" href={% url 'Description' Problem_id %}>Description</a>
+            <a class="nav-link" href={% url 'NewSubmission' Problem_id %}>Submit</a>
+            <a class="nav-link" href={% url 'MySubmissions' Problem_id %}>My Submissions</a>
+        </nav>
+    </div>
+    <hr>
+    <p class="text-center fs-1 fw-bolder">{{Title}}</p>
+    <div class="mx-5 my-5">
+        <p class="text-center fs-3 fw-normal">{{Description|linebreaks}}</p>
+        <p class="fw-bold">Input:</p>
+        {{Input_Format|linebreaks}}
+        <p class="fw-bold">Output:</p>
+        {{Output_Format|linebreaks}}
+        <p class="fw-bold">Constraints:</p>
+        {{Constriants|linebreaks}}
+        <p class="fw-bold">Sample Input:</p>
+        {{Sample_Input|linebreaks}}
+        <p class="fw-bold">Sample Output:</p>
+        {{Sample_Output|linebreaks}}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>

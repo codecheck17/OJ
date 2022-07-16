@@ -1,32 +1,57 @@
-{% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
 </head>
+
 <body>
+  <nav class="navbar bg-light justify-content-end">
+    <div class="p-2">{{ username }}</div>
+    <div class="p-2"><a class="btn btn-primary" href={% url 'ProblemSet' %}>Home</a></div>
+    <div class="p-2"><a class="btn btn-primary" href={% url 'logout' %}>Logout</a></div>
+  </nav>
+  <div class="mx-5 my-2">
+    <nav class="nav nav-pills">
+      <a class="nav-link" href={% url 'Description' Problem_id %}>Description</a>
+      <a class="nav-link" href={% url 'NewSubmission' Problem_id %}>Submit</a>
+      <a class="nav-link active" href={% url 'MySubmissions' Problem_id %}>My Submissions</a>
+    </nav>
+  </div>
+  <hr>
+  <div class="mx-5 my-5">
     {% if SubmissionList %}
-    <table>
+    <table class="table table-striped">
+      <thead class="thead-light">
         <tr>
-           <th>Submission Time&emsp;&emsp;&emsp;&emsp;&emsp;</th>
-           <th>Langauge&emsp;&emsp;&emsp;&emsp;&emsp;</th>
-           <th>Verdict&emsp;&emsp;&emsp;&emsp;&emsp;</th>
-           <th>Code&emsp;&emsp;&emsp;&emsp;&emsp;</th>
+          <th>Submission Time</th>
+          <th>Langauge</th>
+          <th>Verdict</th>
+          <th>Code</th>
         </tr>
-        {% for Submission in SubmissionList %}
-          <tr>
-            <td>{{Submission.SubmissionTime}}</td>
-            <td>{{Submission.Language}}</td>
-            <td>{{Submission.Result}}</td>
-            <td><button><a href={% url 'SubmissionDetail'  Submission.folder Submission.problem Submission.user Submission.SubmissionId Submission.filename %}>Show Code</a></button></td>
-          </tr>
-        {% endfor %}
+      </thead>
+      {% for Submission in SubmissionList %}
+      <tr>
+        <td>{{Submission.Submission_Time}}</td>
+        <td>{{Submission.Language}}</td>
+        <td>{{Submission.Result}}</td>
+        <td><a href={% url 'SubmissionDetail' Submission.SubmissionId Problem_id %} class="btn btn-primary active" role="button" aria-pressed="true">Show Code</a></td>
+      </tr>
+      {% endfor %}
     </table>
-    {% else %}
-       No Submissions for this Problem yet
-    {% endif %}
+  </div>
+  {% else %}
+  <div class="opacity-50">
+    <p class="fs-1 fw-bold text-center my-5">No Submissions for this Problem Yet.</p>
+  </div>
+  {% endif %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+    crossorigin="anonymous"></script>
 </body>
+
 </html>

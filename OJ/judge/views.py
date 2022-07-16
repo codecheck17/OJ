@@ -1,5 +1,5 @@
 import subprocess,re,os
-import this
+from unittest import result
 
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -67,6 +67,7 @@ def findVerdict(Problem,Submission):
             Verdict = "WA"
    
    subprocess.run(f'docker rm -f {Container_id}')
+   os.remove(outputFile)
    with open(CodePath) as Codes:
       Code = Codes.read()
    
@@ -74,7 +75,28 @@ def findVerdict(Problem,Submission):
 
 
 #=====================================================================================#
-
+@login_required
+def SubmissionDetail(request,SubId,Problem_id):
+    SubmissionList = Submission.objects.filter(SubmissionId = SubId)
+    for aSubmission in SubmissionList:
+        CodePath = f'C:/OJ/OJ/{aSubmission.Code.url}'
+        Problem_Name = aSubmission.Problem.Title
+        Submission_time = aSubmission.Submission_Time
+        Language = aSubmission.Language
+        Result = aSubmission.Result
+        with open(CodePath) as file:
+            Codes = file.read()
+        
+    context = {
+        'Problem_id': Problem_id,
+        'Problem_Name': Problem_Name,
+        'Submission_time':Submission_time,
+        'Language': Language,
+        'Result': Result,
+        'username': request.user.username,
+        'Code' : Codes
+    }
+    return render(request,'judge/SubmissionDetail.html',context)
 
 @login_required
 def ProblemSet(request):
@@ -133,6 +155,7 @@ def NewSubmission(request,Problem_id):
         UploadedForm = CodeForm(request.POST,request.FILES,instance = thisSubmission)
         if UploadedForm.is_valid():
             Language_Option = UploadedForm.cleaned_data['Language_Select']
+            thisSubmission.Code = UploadedForm.cleaned_data['Code']
             thisSubmission.Language = Language_Choices[Language_Option]
             thisSubmission.UserName = username
             thisSubmission.SubmissionId = Submission.objects.all().count()+1
@@ -142,9 +165,12 @@ def NewSubmission(request,Problem_id):
             thisSubmission.save() 
             context = {
                 'username' : username,
+                'Problem_id': Problem_id,
+                'Problem_Name':thisProblem.Title,
+                'Submission_time':thisSubmission.Submission_Time,
+                'Language':thisSubmission.Language,
                 'Code':  Code[0],
-                'result': Code[1],
-                'Language':thisSubmission.Language
+                'Result': Code[1]
             }
             return render(request,'judge/Verdict.html',context)
         else:
@@ -166,53 +192,17 @@ def NewSubmission(request,Problem_id):
 
 #=====================================================================================#
 
-class TemplateSubmission():
-    SubmissionId = None
-    SubmissionTime = None
-    problem = None
-    folder = None
-    user = None
-    filename = None
-    Result = None
-    Language = None
-
-
 
 @login_required
 def MySubmissions(request,Problem_id):
     thisProblem = get_object_or_404(Problem,pk=Problem_id)
     username = request.user.username
-    SubmissionList=Submission.objects.filter(Problem = thisProblem,UserName = username).order_by('-Submission_Time')[:5]
-    TemplateSubmissionList = []
-    for thisSubmission in SubmissionList:
-        Template = TemplateSubmission()
-        Template.Language = thisSubmission.Language
-        Template.Result = thisSubmission.Result
-        Template.SubmissionTime = thisSubmission.Submission_Time
-        thisList = thisSubmission.Code.url.split('/')
-      
-        Template.folder = thisList[1]
-        Template.problem = thisList[2]
-        Template.user = thisList[3]
-        Template.SubmissionId = thisList[4]
-        Template.filename = thisList[5]
-
-        TemplateSubmissionList.append(Template)
-    
+    SubmissionList=Submission.objects.filter(Problem = thisProblem,UserName = username).order_by('-Submission_Time')
     context = {
-        'SubmissionList': TemplateSubmissionList
+        'username':username,
+        'Problem_id':Problem_id,
+        'SubmissionList': SubmissionList
     }
     return render(request,'judge/MySubmissions.html',context)
 
 #======================================================================================#
-
-@login_required
-def SubmissionDetail(request,folder,problem,user,subid,filename):
-
-    with open(f'C:/OJ/OJ/{folder}/{problem}/{user}/{subid}/{filename}') as Codes:
-        Code = Codes.read()
-    
-    context = {
-        'Code' : Code
-    }
-    return render(request,'judge/SubmissionDetail.html',context)

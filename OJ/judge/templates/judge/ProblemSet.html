@@ -1,16 +1,29 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
 </head>
+
 <body>
-    <h3 align="right">{{ username }}</h3>
-    <h3 align="right"><a href = {% url 'logout' %}>Logout</a></h3>
+  <nav class="navbar bg-light justify-content-end">
+    <div class="p-2">{{ username }}</div>
+    <div class="p-2"><a class="btn btn-primary" href={% url 'ProblemSet' %}>Home</a></div>
+    <div class="p-2"><a class="btn btn-primary" href={% url 'logout' %}>Logout</a></div>
+  </nav>
+  <h1 align="center">Problem Set</h1><br><br>
+  <div class="list-group list-group-numbered">
     {% for problem in problems %}
-      <li><a href={% url 'Description' problem.Problem_id%}>{{problem.Title}}</a></li>
+    <a class="list-group-item list-group-item-action" href={% url 'Description' problem.Problem_id %}>{{problem.Title}}</a>
     {% endfor %}
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+    crossorigin="anonymous"></script>
 </body>
+
 </html>
