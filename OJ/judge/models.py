@@ -12,6 +12,16 @@ class Problem(models.Model):
     def __str__(self):
         return self.Title
 
+
+class TestcaseQuerySet(models.QuerySet):
+    def delete(self, *args, **kwargs):
+        for obj in self:
+            obj.Input_File.delete()
+            obj.Output_file.delete()
+        super(TestcaseQuerySet, self).delete(*args, **kwargs)
+
+
+
 class TestCase(models.Model):
     
     def upload_file_name_input(self, filename):
@@ -22,6 +32,12 @@ class TestCase(models.Model):
         FolderName = self.Problem_Name.Title
         return f'testfiles/{FolderName}/output/{filename}'
     
+    def delete(self,*args,**kwargs):
+        self.Input_File.delete()
+        self.Output_file.delete()
+        super(TestCase,self).delete(*args,**kwargs)
+    
+    objects = TestcaseQuerySet.as_manager()
     Problem_Name = models.ForeignKey(Problem,on_delete = models.CASCADE)
     Input_File = models.FileField(upload_to = upload_file_name_input)
     Output_file = models.FileField(upload_to = upload_file_name_output)
