@@ -1,10 +1,11 @@
 import subprocess,re,os
-from unittest import result
 
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+
+from OJ.settings import BASE_DIR
 
 from .forms import CodeForm
 from .models import Problem, Submission, TestCase
@@ -22,7 +23,7 @@ Language_Container = {
 }
 
 def findVerdict(Problem,Submission):
-   CodePath = f'C:/OJ/OJ/{Submission.Code.url}'
+   CodePath = f'{BASE_DIR}/{Submission.Code.url}'
    Verdict = "AC"
    Language = Submission.Language
    testcases = TestCase.objects.filter(Problem_Name = Problem)
@@ -41,9 +42,9 @@ def findVerdict(Problem,Submission):
    
    for testcase in testcases:
         
-        inputFile = f'C:/OJ/OJ/{testcase.Input_File.url}'  
-        actual_outputFile = f'C:/OJ/OJ/{testcase.Output_file.url}'   
-        outputFile = f'C:/OJ/OJ/Output.txt'
+        inputFile = f'{BASE_DIR}/{testcase.Input_File.url}'  
+        actual_outputFile = f'{BASE_DIR}/{testcase.Output_file.url}'   
+        outputFile = f'{BASE_DIR}/Output.txt'
        
         subprocess.run(f'docker cp {inputFile} {Container_id}:/input.txt')
         if Language == 'C++':
@@ -79,7 +80,7 @@ def findVerdict(Problem,Submission):
 def SubmissionDetail(request,SubId,Problem_id):
     SubmissionList = Submission.objects.filter(SubmissionId = SubId)
     for aSubmission in SubmissionList:
-        CodePath = f'C:/OJ/OJ/{aSubmission.Code.url}'
+        CodePath = f'{BASE_DIR}/{aSubmission.Code.url}'
         Problem_Name = aSubmission.Problem.Title
         Submission_time = aSubmission.Submission_Time
         Language = aSubmission.Language
@@ -122,8 +123,8 @@ def Description(request,Problem_id):
     CurrentProblem = get_object_or_404(Problem,pk = Problem_id)
     testcases = TestCase.objects.filter(Problem_Name = CurrentProblem)[:1]
     for testcase in testcases:
-        Sample_Input_Path = f'C:/OJ/OJ/{testcase.Input_File.url}'
-        Sample_Output_Path = f'C:/OJ/OJ/{testcase.Output_file.url}'
+        Sample_Input_Path = f'{BASE_DIR}/{testcase.Input_File.url}'
+        Sample_Output_Path = f'{BASE_DIR}/{testcase.Output_file.url}'
         
         with open(Sample_Input_Path) as ip,open(Sample_Output_Path) as op:
             Sample_Input = ip.read()
