@@ -26,10 +26,12 @@ class TestCase(models.Model):
     
     def upload_file_name_input(self, filename):
         FolderName = self.Problem_Name.Title
+        FolderName = re.sub('[;:,. -+]','_',FolderName)
         return f'testfiles/{FolderName}/input/{filename}'
     
     def upload_file_name_output(self,filename):
         FolderName = self.Problem_Name.Title
+        FolderName = re.sub('[;:,. -+]','_',FolderName)
         return f'testfiles/{FolderName}/output/{filename}'
     
     def delete(self,*args,**kwargs):

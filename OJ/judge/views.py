@@ -120,7 +120,8 @@ def ProblemSet(request):
 @login_required
 def Description(request,Problem_id):
     username = request.user.username
-    CurrentProblem = get_object_or_404(Problem,pk = Problem_id)
+    CurrentProblem = get_object_or_404(Problem,Problem_id=Problem_id)
+    
     testcases = TestCase.objects.filter(Problem_Name = CurrentProblem)[:1]
     for testcase in testcases:
         Sample_Input_Path = f'{BASE_DIR}/{testcase.Input_File.url}'
@@ -150,7 +151,7 @@ def Description(request,Problem_id):
 @login_required
 def NewSubmission(request,Problem_id):
     username = request.user.username
-    thisProblem = get_object_or_404(Problem,pk = Problem_id)
+    thisProblem = get_object_or_404(Problem,Problem_id=Problem_id)
     if request.method == 'POST': 
         thisSubmission = Submission(Problem = thisProblem)
         UploadedForm = CodeForm(request.POST,request.FILES,instance = thisSubmission)
@@ -196,7 +197,7 @@ def NewSubmission(request,Problem_id):
 
 @login_required
 def MySubmissions(request,Problem_id):
-    thisProblem = get_object_or_404(Problem,pk=Problem_id)
+    thisProblem = get_object_or_404(Problem,Problem_id=Problem_id)
     username = request.user.username
     SubmissionList=Submission.objects.filter(Problem = thisProblem,UserName = username).order_by('-Submission_Time')
     context = {
